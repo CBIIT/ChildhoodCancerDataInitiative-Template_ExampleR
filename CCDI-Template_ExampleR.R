@@ -288,7 +288,14 @@ workbook_list['study'][[1]]=workbook_list['study'][[1]][1,]
 workbook_list['study_admin'][[1]]=workbook_list['study_admin'][[1]][1,]
 
 #Fix acl
-workbook_list['study'][[1]]['acl']=paste("['",workbook_list['study'][[1]]['acl'][[1]],"']",sep="")
+if ("acl" %in% names(workbook_list['study'][[1]])){
+  workbook_list['study'][[1]]['acl']=paste("['",workbook_list['study'][[1]]['acl'][[1]],"']",sep="")
+}else if ("acl" %in% names(workbook_list['study_admin'][[1]])){
+  workbook_list['study_admin'][[1]]['acl']=paste("['",workbook_list['study_admin'][[1]]['acl'][[1]],"']",sep="")
+}else {
+  cat("ACL property not found in expected node.")
+}
+
 
 #Limit the number of study_arms, study_funding, study_personnel, and publications.
 workbook_list['study_arm'][[1]]=workbook_list['study_arm'][[1]][1:3,]
