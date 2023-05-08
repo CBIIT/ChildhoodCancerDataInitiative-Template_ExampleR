@@ -209,7 +209,8 @@ for (node in sheet_names){
         dict_val_loc=grep(pattern = TRUE,x = df_dict$Property %in% col_name)
         value_type=unique(tolower(df_dict$Type[dict_val_loc]))
         if (!is.na(value_type)){
-          if(value_type=="string"){
+          #for a string or an array of strings that do not allow enums
+          if(value_type=="string" | (grepl(pattern = 'string', x = value_type) & !grepl(pattern = 'enum', x = value_type))){
             
             if (col_name=="md5sum"){
               #make a random string that follows md5sum regex and assign it
@@ -247,12 +248,12 @@ for (node in sheet_names){
               df_add[col_name]=random_string
             }
             
-          }else if (value_type=="integer"){
+          }else if (value_type=="integer" | grepl(pattern = 'integer', x = value_type)){
             #make a random integer and assign it
             random_integer=round(x = runif(n = 1, min=0, max=1000000), digits = 0)
             df_add[col_name]=random_integer
             
-          }else if (value_type=="number"){
+          }else if (value_type=="number" | grepl(pattern = 'number', x = value_type)){
             #make a random number and assign it
             random_number=round(x = runif(n = 1, min=0, max=1000000), digits = 2)
             df_add[col_name]=random_number
