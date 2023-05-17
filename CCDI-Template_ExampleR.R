@@ -88,7 +88,9 @@ path=paste(dirname(template_path),"/",sep = "")
 
 #Output file name based on input file name and date/time stamped.
 output_file=paste(file_name,
-                  "_ExampleR",
+                  "_",
+                  num_of_random,
+                  "ExampleR",
                   stri_replace_all_fixed(
                     str = Sys.Date(),
                     pattern = "-",
