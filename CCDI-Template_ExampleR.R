@@ -208,70 +208,71 @@ for (node in sheet_names){
         #Skip linking properties at this point, since they might not populate in the correct order.
         #We will link all the properties at a later time once everything is populated.
       }else{
-        dict_val_loc=grep(pattern = TRUE,x = df_dict$Property %in% col_name)
-        value_type=unique(tolower(df_dict$Type[dict_val_loc]))
-        if (!is.na(value_type)){
-          #for a string or an array of strings that do not allow enums
-          if(value_type=="string" | (grepl(pattern = 'string', x = value_type) & !grepl(pattern = 'enum', x = value_type))){
-            
-            if (col_name=="md5sum"){
-              #make a random string that follows md5sum regex and assign it
-              random_string=stri_rand_strings(n = 1,length = 32, pattern = '[a-f0-9]')
-              df_add[col_name]=random_string
-            }else if (col_name=="dcf_indexd_guid"){
-              #make a UUID, apply dcf guid guidelines and assign it
-              if (get_os()=="osx"){
-                uuid=tolower(system(command = "uuidgen", intern = T))
+        if (col_name %in% df_dict$Property){
+          dict_val_loc=grep(pattern = TRUE,x = df_dict$Property %in% col_name)
+          value_type=unique(tolower(df_dict$Type[dict_val_loc]))
+          if (!is.na(value_type)){
+            #for a string or an array of strings that do not allow enums
+            if(value_type=="string" | (grepl(pattern = 'string', x = value_type) & !grepl(pattern = 'enum', x = value_type))){
+              
+              if (col_name=="md5sum"){
+                #make a random string that follows md5sum regex and assign it
+                random_string=stri_rand_strings(n = 1,length = 32, pattern = '[a-f0-9]')
+                df_add[col_name]=random_string
+              }else if (col_name=="dcf_indexd_guid"){
+                #make a UUID, apply dcf guid guidelines and assign it
+                if (get_os()=="osx"){
+                  uuid=tolower(system(command = "uuidgen", intern = T))
+                }else{
+                  uuid=system(command = "uuid", intern = T)
+                }
+                df_add[col_name]=paste('dg.4DFC/',uuid,sep="")
+              }else if (col_name=="file_url_in_cds"){
+                #make a set of random words into a string and assign it
+                random_words=c()
+                for (y in 1:2){
+                  random_word=filtered_words[,1][runif(n = 1,min = 1, max = dim(filtered_words)[1])]
+                  random_words=c(random_words,random_word)
+                }
+                random_integer=round(x = runif(n = 1, min=0, max=9), digits = 0)
+                random_words=c(random_words,random_integer)
+                random_string=paste(random_words, collapse = "_")
+                df_add[col_name]=paste('s3://',random_string,sep = "")
               }else{
-                uuid=system(command = "uuid", intern = T)
+                #make a set of random words into a string and assign it
+                random_words=c()
+                for (y in 1:2){
+                  random_word=filtered_words[,1][runif(n = 1,min = 1, max = dim(filtered_words)[1])]
+                  random_words=c(random_words,random_word)
+                }
+                random_integer=round(x = runif(n = 1, min=0, max=9), digits = 0)
+                random_words=c(random_words,random_integer)
+                random_string=paste(random_words, collapse = "_")
+                df_add[col_name]=random_string
               }
-              df_add[col_name]=paste('dg.4DFC/',uuid,sep="")
-            }else if (col_name=="file_url_in_cds"){
-              #make a set of random words into a string and assign it
-              random_words=c()
-              for (y in 1:2){
-                random_word=filtered_words[,1][runif(n = 1,min = 1, max = dim(filtered_words)[1])]
-                random_words=c(random_words,random_word)
+              
+            }else if (value_type=="integer" | grepl(pattern = 'integer', x = value_type)){
+              #make a random integer and assign it
+              random_integer=round(x = runif(n = 1, min=0, max=1000000), digits = 0)
+              df_add[col_name]=random_integer
+              
+            }else if (value_type=="number" | grepl(pattern = 'number', x = value_type)){
+              #make a random number and assign it
+              random_number=round(x = runif(n = 1, min=0, max=1000000), digits = 2)
+              df_add[col_name]=random_number
+              
+            }else if (value_type=="enum" | grepl(pattern = 'enum', x = value_type)){
+              #choose a random permissible value and assign it
+              df_tavs_prop=df_all_terms[col_name][[1]][[1]]
+              random_enum=round(x = runif(n = 1, min = 1, max = length(df_tavs_prop)),digits = 0)
+              enum_value=df_tavs_prop[random_enum]
+              
+              if (is.na(enum_value)){
+                enum_value="NA"
               }
-              random_integer=round(x = runif(n = 1, min=0, max=9), digits = 0)
-              random_words=c(random_words,random_integer)
-              random_string=paste(random_words, collapse = "_")
-              df_add[col_name]=paste('s3://',random_string,sep = "")
-            }else{
-              #make a set of random words into a string and assign it
-              random_words=c()
-              for (y in 1:2){
-                random_word=filtered_words[,1][runif(n = 1,min = 1, max = dim(filtered_words)[1])]
-                random_words=c(random_words,random_word)
-              }
-              random_integer=round(x = runif(n = 1, min=0, max=9), digits = 0)
-              random_words=c(random_words,random_integer)
-              random_string=paste(random_words, collapse = "_")
-              df_add[col_name]=random_string
+              
+              df_add[col_name]=enum_value
             }
-            
-          }else if (value_type=="integer" | grepl(pattern = 'integer', x = value_type)){
-            #make a random integer and assign it
-            random_integer=round(x = runif(n = 1, min=0, max=1000000), digits = 0)
-            df_add[col_name]=random_integer
-            
-          }else if (value_type=="number" | grepl(pattern = 'number', x = value_type)){
-            #make a random number and assign it
-            random_number=round(x = runif(n = 1, min=0, max=1000000), digits = 2)
-            df_add[col_name]=random_number
-            
-          }else if (value_type=="enum" | grepl(pattern = 'enum', x = value_type)){
-            #choose a random permissible value and assign it
-            df_tavs_prop=df_all_terms[col_name][[1]][[1]]
-            random_enum=round(x = runif(n = 1, min = 1, max = length(df_tavs_prop)),digits = 0)
-            enum_value=df_tavs_prop[random_enum]
-            
-            if (is.na(enum_value)){
-              enum_value="NA"
-            }
-            
-            df_add[col_name]=enum_value
-            
           }
         }
       }
