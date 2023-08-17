@@ -207,6 +207,8 @@ for (node in sheet_names){
       }else if (grepl(pattern = "\\.", x = col_name)){
         #Skip linking properties at this point, since they might not populate in the correct order.
         #We will link all the properties at a later time once everything is populated.
+      }else if(grepl(pattern = TRUE, x = col_name %in% 'id')){
+        #this is for the id only column that is present, this is created often when TabBreakeR script is used to create 
       }else{
         if (col_name %in% df_dict$Property){
           dict_val_loc=grep(pattern = TRUE,x = df_dict$Property %in% col_name)
@@ -326,17 +328,20 @@ for (node in sheet_names){
       if (grepl(pattern = "\\.", x = col_name)){
         prev_node=unlist(stri_split_fixed(str = col_name, pattern = "."))[1]
         prev_prop=unlist(stri_split_fixed(str = col_name, pattern = "."))[2]
-        df_prev=workbook_list[prev_node][[1]]
-        value_prev=df_prev[prev_prop][[1]]
-        if(length(value_prev)<dim(df[col_name])[1]){
-          fit_size=dim(df[col_name])[1]
-          actual_size=length(value_prev)
-          multi=trunc(fit_size/actual_size)+1
-          value_prev=rep(x = value_prev, multi)
-          value_prev=value_prev[1:fit_size]
+        #as long as the previous property is not an "id" only prop
+        if (!grepl(pattern = TRUE, x = prev_prop %in% "id")){
+          df_prev=workbook_list[prev_node][[1]]
+          value_prev=df_prev[prev_prop][[1]]
+          if(length(value_prev)<dim(df[col_name])[1]){
+            fit_size=dim(df[col_name])[1]
+            actual_size=length(value_prev)
+            multi=trunc(fit_size/actual_size)+1
+            value_prev=rep(x = value_prev, multi)
+            value_prev=value_prev[1:fit_size]
+          }
+          df[col_name]<-value_prev
+          workbook_list[node][[1]]=df
         }
-        df[col_name]<-value_prev
-        workbook_list[node][[1]]=df
       }
     }
   }
@@ -350,8 +355,12 @@ for (node in sheet_names){
     df=workbook_list[node][[1]]
     df_cols=colnames(df)
     if(length(grep(pattern = "\\.", x = df_cols))>1){
-      conn_len=length(grep(pattern = "\\.", x = df_cols))
-      conn_val=df_cols[grep(pattern = "\\.", x = df_cols)]
+      #for the pattern that has a dot but not a dot id '.id', how many values are there
+      conn_len=length(grep(pattern = TRUE, x = !(grep(pattern = "\\.", x = df_cols) %in% grep(pattern = "\\.id", x = df_cols))))
+      #determine the position of the values that are dot but not '.id'
+      conn_pos=grep(pattern = "\\.", x = df_cols)[!(grep(pattern = "\\.", x = df_cols) %in% grep(pattern = "\\.id", x = df_cols))]
+      conn_val=df_cols[conn_pos]
+      
       for (x in 1:num_of_random){
         col_ran=round(runif(n = 1, min = 1, max = conn_len))
         conn_val_rans=conn_val[-col_ran]
