@@ -1,4 +1,4 @@
-# ChildhoodCancerDataInitiative-Template_ExampleR
+# ChildhoodCancerDataInitiative-Template_ExampleR (ARCHIVED)
 This script will take a CCDI metadata submission template file and create a fake example data set.
 
 To run the script on a CCDI template, run the following command in a terminal where R is installed for help.
